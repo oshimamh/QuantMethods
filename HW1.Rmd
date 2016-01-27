@@ -1,0 +1,48 @@
+---
+title: "HW1"
+author: "Mitch Oshima"
+date: "January 13, 2016"
+output: pdf_document
+---
+
+1.) The CSV file contains a dataframe with columns named plot, year, record_id, corner, scale, richness, easting, northing, slope, ph, and yrsslb.
+
+```{r}
+dat <- read.csv(file = "http://dmcglinn.github.io/quant_methods/data/tgpp.csv", header = T)
+colnames(dat)
+```
+
+2.) The dataframe is made up of 11 columns and 4080 rows. This can be found by using nrow() and ncol().
+```{r}
+nrow(dat)
+ncol(dat)
+```
+
+Alternatively, the dimension function, dim(), will return the dimensions of the dataframe.
+```{r}
+dim(dat)
+```
+
+3.)  Each data column is an N x 1 matrix where N is the number of observations in that class column. The columns plot, year, record_id, corner, richnessm easting, northing, and slope contain integer objects. The columns scale, ph, and yrsslb are contain numeric objects. 
+```{r}
+sapply(dat,class)
+```
+
+4.) The values for the 1st row in columns 3,7, and 10 are 187,727000, 6.9. The values in the 5th row for these columns are 191, 727000, and 6.9. The values in the 8th row for these columns are 194, 727000, and 6.9.
+```{r}
+dat[c(1,5,8),c(3,7,10)]
+```
+
+5.) 
+```{r}
+pdf('./ScalevRich.pdf')
+plot(dat[,6],dat[,5],xlab = "richness", ylab = "scale", col = 26)
+dev.off()
+```
+
+6.) Adding the argument log = 'xy' to the plot function call causes both the x and y axes to be logarithmic.
+```{r}
+pdf('./logScalevRich.pdf')
+plot(dat[,6],dat[,5], log='xy', xlab = "log(richness)", ylab = "log(scale)", col = 26)
+dev.off()
+```

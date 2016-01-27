@@ -1,0 +1,137 @@
+---
+title: "Homework 2"
+author: "Mitch Oshima"
+date: "January 20, 2016"
+output: pdf_document
+---
+
+```{r}
+data(iris)
+head(iris)
+sp_ids = unique(iris$Species)
+
+output = matrix(0, nrow=length(sp_ids), ncol=ncol(iris)-1)
+rownames(output) = sp_ids
+colnames(output) = names(iris[ , -ncol(iris)])
+
+for(i in seq_along(sp_ids)) {
+    iris_sp = subset(iris, subset=Species == sp_ids[i], select=-Species)
+    for(j in 1:(ncol(iris_sp))) {
+        x = 0
+        y = 0
+        if (nrow(iris_sp) > 0) {
+            for(k in 1:nrow(iris_sp)) {
+                x = x + iris_sp[k, j]
+                y = y + 1
+            }
+            output[i, j] = x / y 
+        }
+    }
+}
+output
+```
+
+1.) The output object is a 3x4 matrix where setosa, veriscolor, and virginiaca are the rows and sepal.Length, sepal.width, petal.length, and petal.width are columns. The values that are stored in the matrix are the average values for each species.
+
+2.) Before the loop is initialized the list sp_ids is created to house the unique species types contained in the matrix iris. The object output is also created which is a matrix that uses sp_ids as the rows and the other colums from iris as the columns. The for loop is described in the pseudocode below.
+
+Loop through the list sp_ids
+    subset iris when the species in sp_ids equals Species and select all the data     except for the Species column. Store this data in iris_sp.
+    
+    Loop through each column of iris_sp
+        and set X and Y equal to 0.
+        
+        If the number of rows in iris_sp is greater than 0 then,
+            Loop through the rows of iris_sp
+                add each value of each row for each species and store that value                  in X while Y stores the number of observations that have been                     summed.
+                
+                Divide X by Y to get the average for of the column for each                       species and then store those numbers in the output matrix.
+
+
+3.) I would rename "output" as "means" or "averages" so that the user knows what the values in the matrix represents. I would rename "X" as "sum" or "total" and "Y" as "count" so that it is more clear that X is the sum of each variable and Y is the number of observations that are being summed.
+
+```{r}
+data(iris)
+head(iris)
+sp_ids = unique(iris$Species)
+
+averages = matrix(0, nrow=length(sp_ids), ncol=ncol(iris)-1)
+rownames(averages) = sp_ids
+colnames(averages) = names(iris[ , -ncol(iris)])
+
+for(i in seq_along(sp_ids)) {
+    iris_sp = subset(iris, subset=Species == sp_ids[i], select=-Species)
+    for(j in 1:(ncol(iris_sp))) {
+        total = 0
+        count = 0
+        if (nrow(iris_sp) > 0) {
+            for(k in 1:nrow(iris_sp)) {
+                total = total + iris_sp[k, j]
+                count = count + 1
+            }
+            averages[i, j] = total / count
+        }
+    }
+}
+averages
+```
+
+4.) 
+```{r}
+data(iris)
+head(iris)
+sp_ids = unique(iris$Species)
+
+averages = matrix(0, nrow=length(sp_ids), ncol=ncol(iris)-1)
+rownames(averages) = sp_ids
+colnames(averages) = names(iris[ , -ncol(iris)])
+
+for(i in seq_along(sp_ids)) {
+  iris_sp = subset(iris, subset=Species == sp_ids[i], select=-Species)
+  for(j in ncol(iris_sp)) {
+    x = mean(iris_sp[,j])
+  }
+  averages[i,j] = x
+}
+averages
+```
+
+5.) 
+```{r}
+x = c(1,2,3,4,5,6,7,8,9,10)
+y = c()
+for( i in x) {
+  tot = sum(x[1:i])
+  y = c(y, tot)
+}
+y
+```
+
+6.)
+```{r}
+x = c(1,2,3,4,5,6,7,8,9,10)
+y = c()
+for( i in x) {
+  tot = sum(x[1:i])
+  y = c(y, tot)
+  if(y[i]>10) {
+    y[i]="NA"
+  }
+}
+y
+```
+
+7.)
+```{r}
+myFunc = function(Vector){
+  y = c()
+  for( i in length(Vector)) {
+    tot = sum(Vector[1:i])
+    y = c(y, tot)
+    if(y[i]>10) {
+      y[i]="na"
+    }
+  }
+  y
+}
+```

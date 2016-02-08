@@ -1,0 +1,62 @@
+---
+title: "HW4"
+author: "Mitch Oshima"
+date: "February 3, 2016"
+output: pdf_document
+---
+
+1.) After reading in the csv dataframe "treedata," I used an intercept only model to analyze the species cover data, "cover" from the dataframe. I then made a regression model using all of the variables in the dataframe. 
+```{r}
+library(car)
+treedata = read.csv(url("http://dmcglinn.github.io/quant_methods/data/treedata.csv"), header = TRUE)
+expMod1 = lm(treedata$cover ~ 1)
+expMod1
+Anova(expMod1, type = 3)
+summary(expMod1)
+expMod2 = lm(cover ~ ., data = treedata)
+expMod2
+summary(expMod2)
+```
+  Running an ANOVA test on the expMod1 give us a p-value that is very small ("<2.2e-16") while the summary function gives us an equally small p-vale("<2e-16"). Running an ANOVA test on expMod2 shows us that the variables plotsize, species, elev, disturb, and beers all have p values that show statistical significance.
+  Using the summary function on expMod2 returns a more detailed look at each variable. The summary breaks down each categorical variable by the factors included in that column. 
+  After running this model I created two subsets of the data, one for Red Maples and one for Frasier Firs. These subsets were then used to build additional regression models. I then made an intercept only model which gave the same results on the subsets as the entire dataset. 
+```{r}
+Abies = subset(treedata, species == "Abies fraseri")
+Abies = Abies[,-c(4,5)]
+Acer = subset(treedata, species =="Acer rubrum")
+Acer = Acer[,-c(4,5)]
+abiesMod1 = lm(cover ~ ., data = Abies)
+acerMod1 = lm(cover ~ ., data = Acer)
+
+summary(abiesMod1)
+
+summary(acerMod1)
+```
+
+2.)
+  Using the glm function, I created two models to analyze the Acer dataset and the Abies dataset.
+```{r}
+acer_glm = glm(cover ~ . , data = Acer, family = "poisson")
+abies_glm = glm(cover ~ ., data = Abies, family = "poisson")
+
+summary(acer_glm)
+summary(abies_glm)
+```
+  I then calculated the r squared by creating a function that finds r squared by subtracting residual deviation divided by null deviation from 1.
+```{r}
+pseudo_r2 = function(glm_mod) {
+    1 -  glm_mod$deviance / glm_mod$null.deviance
+}
+
+pseudo_r2(acer_glm)
+pseudo_r2(abies_glm)
+```
+  According to the calculated r squared function the abies model has a higher r squared value at .9963 however the acer model also has a high r squared value at .9865. To compare the OLS model with the GLM model I used the anova function to find the sum of squares for the two models.
+```{r}
+anova(acerMod1, acer_glm)
+anova(abiesMod1, abies_glm)
+```
+
+3.)
+  The analysis performed on the data set was a multi-step process. First I analyzed the dataset as a whole using an intercept only model. This model extrapolates from the intercept and slope and not from other facotrs in the dataset. According to this analysis the factors that best determine coverage in an ordinary linear are plotsize, species, elev, disturb, and beers. This model gave the same p-values as a model that was created using all of the other factors instead of just the intercept. This tells us that while this adds some significant data, it does not neccesarily improve our model for coverage.
+  The next analysis that was performed involved subsetting the data by species type. This was done to see if some factors were more important to modelling different species. Breaking up the data did not effect the Acer model however, the Abies model actually performed slightly worse when using the subsetted data. 

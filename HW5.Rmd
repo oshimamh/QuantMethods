@@ -1,0 +1,47 @@
+---
+title: "HW5"
+author: "Mitch Oshima"
+date: "February 10, 2016"
+output: pdf_document
+---
+
+Load in data from vegan package.
+
+```{r}
+library(vegan)
+data(dune)
+data(dune.env)
+?dune
+```
+
+1.) 
+This type of analysis allows us to view different variables by which datasets may be clustered or correlated. After running the NMDS analysis and plotting the results we can see that the species seem to be clustered by levels of moisture. 
+
+```{r}
+dune_mds = metaMDS(dune, distance = "bray")
+plot(dune_mds, type='n')
+text(dune_mds, 'sp', cex=.5)
+# generate vector of colors 
+color_vect = rev(terrain.colors(6))[-1]
+points(dune_mds, 'sites', pch=19, col=color_vect[dune.env$Moisture])
+legend('topright', paste("Moisture =", 1:5, sep=''), col=color_vect, pch=19)
+```
+
+2.) 
+  Using the cca function from the vegan package I performed a canonical correspondence analysis of the dune data as explained by all of the environmental data. The cca test resulted in a total inertia of 2.1153. The constrained axes acounted for about 1.5 of the total while the unconstrained axes added .61. The plot for this analysis did not show a particularly strong relationship within the variables. 
+```{r}
+dune_ca1 = cca(dune ~ A1 + Moisture + Management + Use + Manure, dune.env)
+dune_ca1
+plot(dune_ca1, xlim=c(-10,10), ylim=c(-20, 20), display=c('sp','bp'), scaling=1)
+anova(dune_ca1, by='margin', permutations = 10)
+```
+  I then only looked at the moisture variable from the dune environment data. The total inertia did not chage. Howver, the constrained axes accounted for .62 while the unconstrained axes accounted for 1.48. This makes sense since there are less explanatory variables being included in the model.
+```{r}
+dune_ca2 = cca(dune ~ Moisture, dune.env)
+dune_ca2
+plot(dune_ca2, xlim=c(-10,10), ylim=c(-10, 10), display=c('sp','bp'), scaling=1)
+anova(dune_ca2, by='margin', permutations = 10)
+```
+
+3.)
+The two test performed on the data set does not seem to agree. In the first analysis there was a visible striation within the data based on moisture. However, in the CCA, there is no clear relationship between species and moisture. 

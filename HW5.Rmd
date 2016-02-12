@@ -9,13 +9,14 @@ Load in data from vegan package.
 
 ```{r}
 library(vegan)
+library(dummies)
 data(dune)
 data(dune.env)
 ?dune
 ```
 
 1.) 
-This type of analysis allows us to view different variables by which datasets may be clustered or correlated. After running the NMDS analysis and plotting the results we can see that the species seem to be clustered by levels of moisture. 
+This type of analysis allows us to view different variables by which datasets may be clustered or correlated. After running the NMDS analysis and plotting the results we can see that the species seem to be loosely clustered by levels of moisture. 
 
 ```{r}
 dune_mds = metaMDS(dune, distance = "bray")
@@ -28,20 +29,30 @@ legend('topright', paste("Moisture =", 1:5, sep=''), col=color_vect, pch=19)
 ```
 
 2.) 
-  Using the cca function from the vegan package I performed a canonical correspondence analysis of the dune data as explained by all of the environmental data. The cca test resulted in a total inertia of 2.1153. The constrained axes acounted for about 1.5 of the total while the unconstrained axes added .61. The plot for this analysis did not show a particularly strong relationship within the variables. 
+  Using the cca function from the vegan package I performed a canonical correspondence analysis of the dune data as explained by all of the environmental data. The cca test resulted in a total inertia of 2.1153. The constrained axes acounted for about 1.5 of the total while the unconstrained axes added .61. The plot for this analysis did not show a particularly strong relationship within the variables. Using an ANOVA test I found that moisture and manure have the highest 
 ```{r}
 dune_ca1 = cca(dune ~ A1 + Moisture + Management + Use + Manure, dune.env)
 dune_ca1
-plot(dune_ca1, xlim=c(-10,10), ylim=c(-20, 20), display=c('sp','bp'), scaling=1)
-anova(dune_ca1, by='margin', permutations = 10)
+#creates a plot showing each axis
+plotdune1 = plot(dune_ca1, xlim=c(-10,10), ylim=c(-20, 20), display=c('sp','bp'), scaling=1)
+anova(dune_ca1, by='margin')
 ```
-  I then only looked at the moisture variable from the dune environment data. The total inertia did not chage. Howver, the constrained axes accounted for .62 while the unconstrained axes accounted for 1.48. This makes sense since there are less explanatory variables being included in the model.
+  After looking at every variable in the dune.env dataset, moisture seems to have the strongest relationship with the data. 
+  I then only looked at the moisture variable from the dune environment data. The total inertia did not chage. Howver, the constrained axes accounted for .62 while the unconstrained axes accounted for 1.48. This makes sense since there are less explanatory variables being included in the model. 
 ```{r}
 dune_ca2 = cca(dune ~ Moisture, dune.env)
 dune_ca2
-plot(dune_ca2, xlim=c(-10,10), ylim=c(-10, 10), display=c('sp','bp'), scaling=1)
-anova(dune_ca2, by='margin', permutations = 10)
+plotdune2 = plot(dune_ca2, xlim=c(-10,10), ylim=c(-10, 10), display=c('sp','bp'), scaling=1)
+```
+  Graphically, the plot of the CCA test is not very helpful. To create a more helpful visualization I created an empty plot and then added the points of the species. These points were then color coded by moisture level to better display any clustering that appears.
+```{r}
+#create new plot
+plot(dune_ca2, type ='n')
+color_vect = rev(terrain.colors(6))[-1]
+points(dune_ca2, 'sites', pch=19, col=color_vect[dune.env$Moisture])
+legend('topright', paste("Moisture =", 1:5, sep=''), col=color_vect, pch=19)
+anova(dune_ca2, by='margin')
 ```
 
 3.)
-The two test performed on the data set does not seem to agree. In the first analysis there was a visible striation within the data based on moisture. However, in the CCA, there is no clear relationship between species and moisture. 
+  At first glance, the two test performed on the data set does not seem to agree. In the first analysis there was a visible striation within the data based on moisture while in the CCA, there is no clear relationship between species and moisture. However, when we change the plot of the CCA test we can see that there is in fact a similar amount of clustering that occurs based on moisture levels. 

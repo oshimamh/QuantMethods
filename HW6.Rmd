@@ -1,0 +1,69 @@
+---
+title: "HW6"
+author: "Mitch Oshima"
+date: "February 17, 2016"
+output: pdf_document
+---
+
+1.) 
+  After loading in the BCI data set I used the colSums function to determine how many of each species was recorded and selected Virola.multiflora as a rare species and Tabernaemontana.arborea as a common species (the call for colSums() was left out of the code to eliminate unneccesary output in the PDF). I isloated these species from the data set and plotted the BCI_xy coordinates using the count of species to scale the size of the points. I was able to see that the virola species grows more along the bottom of the plot. Meanwhile the tabernaemontana species grows more in the upper right quadrant of the plot. 
+```{r}
+library(nlme)
+library(vegan)
+data(BCI)
+## UTM Coordinates (in metres)
+BCI_xy = data.frame(x = rep(seq(625754, 626654, by=100), each=5), 
+                    y = rep(seq(1011569,  1011969, by=100), len=50))
+
+#Virola.multiflora is rare species. Tabernaemontana.arborea is common species.
+virMult = BCI$Virola.multiflora
+tabArb = BCI$Tabernaemontana.arborea
+virPlot = plot(BCI_xy, cex = virMult)
+tabPlot = plot(BCI_xy, cex = tabArb)
+```
+
+2.)
+  First, I decided to use the Cordia lasiocalyx species as the initial predictor. The second model uses each of the tree species as predictors. For the remainder of the analysis the models designated with a "1" uses the single predictor while the models ending with a "2" represents the models using multiple predictors. I then plotted the variogram for each of these models.
+    The first plot fits the data pretty well. However, there is a point that seems be pulling the model towards it causing the fit line to flatten out near the top. When looking at the variogarm plot for the second model we see a similar effect as in the first plot. The line of fit is being pulled down by the outlier point at the end. However, I limited the the maximum distance which greatly improved the model's performance. 
+```{r}
+sp_ids = c("Drypetes.standleyi","Cordia.lasiocalyx", "Hirtella.triandra",
+           "Picramnia.latifolia", "Quassia.amara",
+           "Tabernaemontana.arborea", "Trattinnickia.aspera", 
+           "Xylopia.macrantha")
+BCI_dat = data.frame(BCI[,sp_ids],BCI_xy)
+
+xy_dist = dist(BCI_xy)
+max_dist = max(xy_dist)/2
+
+
+sp_lm1 = gls(Drypetes.standleyi~Cordia.lasiocalyx, data = BCI_dat)
+par(mfrow=c(1,1))
+plot(Variogram(sp_lm1, form= ~ x + y, maxDist = max_dist))
+
+sp_lm2 = gls(Drypetes.standleyi~Cordia.lasiocalyx+Hirtella.triandra+Picramnia.latifolia+Quassia.amara+Tabernaemontana.arborea+Trattinnickia.aspera+Xylopia.macrantha, data = BCI_dat)
+par(mfrow=c(1,1))
+plot(Variogram(sp_lm2, form= ~ x + y, maxDist = max_dist))
+```
+
+  After including the error term in the model the model seems to be weaker. I applied two different error structures to each of the model. First, I used an exponential error model and while the shape seems to fit the data there once again seems to an influencial point that is shifting the fit line upwards. However, once the nugget was included in the model the fit was much stronger with this error structure particularly in the single predictor model. 
+    
+```{r}
+sp_exp1 = update(sp_lm1, corr=corExp(form=~x + y))
+plot(Variogram(sp_exp1, maxDist = max_dist))
+
+sp_exp2 = update(sp_lm2, corr=corExp(form=~x + y))
+plot(Variogram(sp_exp2, maxDist = max_dist))
+
+sp_expNug1 = update(sp_lm1, corr=corExp(form=~x + y, nugget = T),control=glsControl(opt='optim',  msVerbose=T))
+plot(Variogram(sp_expNug1, maxDist = max_dist))
+
+sp_expNug2 = update(sp_lm2, corr=corExp(form=~x + y, nugget = T),control=glsControl(opt='optim',  msVerbose=T))
+plot(Variogram(sp_expNug2, maxDist = max_dist))
+```
+
+  I then used the anova function to compare these models to one another. With both the single preidictor and the multiple predictors including the error term greatly improved the model as did the inclusion of the nugget as evidenced in the change in the log of likelihood value. The inclusion of the error terms improved these models by shifting the points to a more linear shape and reducing the variation at the upper extremes of the distance variable.
+  
+```{r}
+anova(sp_lm1,sp_exp1,sp_expNug1)
+anova(sp_lm2,sp_exp2,sp_expNug2)
+```

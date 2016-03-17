@@ -8,7 +8,11 @@ output: pdf_document
 1.) After reading in the csv dataframe "treedata," I used an intercept only model to analyze the species cover data, "cover" from the dataframe. I then made a regression model using all of the variables in the dataframe. 
 ```{r}
 library(car)
-treedata = read.csv(url("http://dmcglinn.github.io/quant_methods/data/treedata.csv"), header = TRUE)
+treedata = read.csv(url("http://dmcglinn.github.io/quant_methods/data/treedata_subset.csv"), 
+                    header = TRUE)
+tree_sub = subset(treedata, select = c('cover', 'elev', 'tci', 'streamdist', 'disturb', 'beers'))
+acer = subset(treedata, subset=species=='Acer rubrum', 
+              select =c('cover', 'elev', 'tci', 'streamdist', 'disturb', 'beers'))
 expMod1 = lm(treedata$cover ~ 1)
 expMod1
 Anova(expMod1, type = 3)
@@ -26,7 +30,7 @@ Abies = Abies[,-c(4,5)]
 Acer = subset(treedata, species =="Acer rubrum")
 Acer = Acer[,-c(4,5)]
 abiesMod1 = lm(cover ~ ., data = Abies)
-acerMod1 = lm(cover ~ ., data = Acer)
+acerMod1 = lm(cover ~ ., data = acer)
 
 summary(abiesMod1)
 
